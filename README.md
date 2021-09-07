@@ -39,3 +39,4 @@ RStudio is a useful wrapper for R that we'll use in the course. It talks to git,
 - After installing RStudio, make sure that git is working. Open RStudio and open Preferences. Under the left column, select "Git/SVN" and make sure the "Enable version control interace for RStudio projects" is checked. 
     
     
+I'm making this change to demonstrated conflicted merging. 
