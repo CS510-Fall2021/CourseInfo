@@ -1,0 +1,356 @@
+---
+title: "ggplot2 Lecture Notebook"
+author: Lindsay Waldrop
+date: 9/21/2021
+output: html_notebook
+---
+
+```{r,include=TRUE}
+# Loading required libraries
+# Be sure to install these before running this file!!
+library(lattice)
+library(ggplot2)
+library(tidyr)
+library(janitor)
+library(readxl)
+```
+
+## Plotting Systems in R
+
+#### Base graphics and the `grid` package
+
+Example of a plot in base graphics using the `mtcars` data set: 
+
+```{r, include=TRUE}
+data("mtcars")
+
+plot(x = mtcars$mpg, y = mtcars$hp, 
+     col = "black", bg = "red", pch = 21)
+```
+
+#### The Trellis system in the `lattice` package
+
+Example of a density plot in the `lattice` package:
+
+```{r,include=TRUE}
+densityplot(~mpg, data = mtcars,
+            main = "Density Plot",
+            xlab = "Miles per Gallon")
+```
+#### The Grammar of Graphics `ggplot2` package
+
+Example of a plot using `ggplot2`:
+
+```{r, include=TRUE}
+ggplot(mtcars, aes(x = mpg, y = hp, fill = factor(cyl))) + 
+  geom_point(pch = 21, size = 2)  +
+  xlab("Miles per Gallon") + ylab("Horsepower")
+```
+
+#### Put your answer to the Check Your Understanding here
+
+Use the Orange data set to create a scatterplot with ggplot2 of circumference versus tree age.
+```{r, include=TRUE}
+
+```
+
+## Data Shape and `ggplot`
+
+To reap the most benefits from the `ggplot` package, many times it will require you to reshape your data from a traditional "wide" format to a "long" format. 
+
+Reshape the `Loblolly` dataset into the wide format using `pivot_wider` from the `tidyr` package:
+```{r,include=TRUE}
+data("Loblolly")
+Loblolly.wide <- pivot_wider(Loblolly, 
+                             names_from = age, 
+                             values_from = height)
+Loblolly.wide
+```
+Now convert Loblolly into the long format, preferred by `ggplot`, using `pivot_longer` in the `tidyr` package:
+
+```{r,include=TRUE}
+Loblolly.long <- pivot_longer(Loblolly.wide, 
+                              cols = !Seed, 
+                              names_to = "age", 
+                              values_to = "Height", 
+                              names_transform = list(age = as.numeric))
+Loblolly.long
+```
+
+It's not always necessary to reshape your data frame, it depends on what you want to plot and how you want it mapped!
+
+#### Plotting with wide vs long data
+
+Using the two loblolly data frames, here are two plots. 
+
+First, in the wide format, we can plot individual seeds at individual years, but are unable to plot something perhaps more useful, like height versus age. You MUST map each column to x and y, which limits your options in the wide format.
+```{r,include=TRUE}
+ggplot(Loblolly.wide, aes(x = Seed, y = `3`))+ geom_point()
+```
+However, in the long format useful things like height versus age are easily plotted out: 
+```{r,include=TRUE}
+ggplot(Loblolly.long, aes(x = factor(age), y = Height, color = Seed)) +
+  geom_point(pch=19) 
+```
+
+It's also possible to run other geoms like `geom_boxplot()`, which will calculate the means and quartiles for each age and plot them: 
+
+```{r,include=TRUE}
+ggplot(Loblolly.long, aes(x = factor(age), y = Height)) + geom_boxplot()
+```
+
+Another popular plot is a violin plot, where the distribution of data is represented by the width of the violin: 
+
+```{r,include=TRUE}
+ggplot(Loblolly.long, aes(x = factor(age), y = Height)) + geom_violin()
+```
+
+#### Put your answer to the Check Your Understanding here
+
+1: Reshape the fish_encounters data set (in the tidyr package) into a wide format.
+```{r, include=TRUE}
+
+```
+
+2: Reshape the relig_income data set (in the tidyr package) into a long format.
+```{r, include=TRUE}
+
+```
+
+## Changing Attributes
+
+#### Changing Basic Plot Attributes
+
+Here are some example plots in the lecture, simply comment or uncomment the ones you want to see plotted. 
+
+Plot and axis labels: 
+
+```{r, include=TRUE}
+p <- ggplot(mtcars, aes(x = mpg, y = hp)) +
+  geom_point()
+p + xlab("Miles Per Gallon") # X-axis label
+p + ylab("Horsepower") # Y-axis label
+p + ggtitle("Horsepower vs MPG from MTCars") # chart title
+```
+
+Axis scales: 
+```{r,include=TRUE}
+p + xlim(0, 50) # altering limits of x-axis
+p + ylim(0, 500) # altering limits of y-axis
+# Note: no color to alter
+```
+
+Formatting plot area and text: 
+```{r, include=TRUE}
+# Alters size of text throughout plot and angel of the text to the x-axis.
+p + theme(text = element_text(size=20),
+        axis.text.x = element_text(angle=90, hjust=1)) 
+```
+
+Minimal theme: 
+```{r,include=TRUE}
+p + theme_minimal()
+```
+
+#### Changing Aesthetic Values
+
+Changing point size, shape, color, and fill independently of mapping:
+```{r,include=TRUE}
+p2 <- ggplot(mtcars, aes(x = mpg, y = hp)) 
+p2 + geom_point(size = 2)
+p2 + geom_point(shape = 3)
+p2 + geom_point(color = "red")
+p2 + geom_point(pch = 21, color = "black", 
+                fill = "red")
+```
+
+#### Put your answer to the Check Your Understanding here
+
+Add to the plot in your last check your understanding by:
+
+ 1. Adding axis labels and a title.
+ 2. Changing the color, shape, and size of the points.
+ 3. Rotating the x-axis labels by 45 degrees.
+ 
+```{r, include=TRUE}
+
+```
+
+
+#### Grouping and Aesthetic Values
+
+In order to have things like color, point, or size alter with the values of one of your data columns, you have to *map* this data onto a value. Here are three examples of how to map the `cyl` column from mtcars onto either fill, color, or shape. Uncomment the line you'd like to see.
+
+```{r,include=TRUE}
+# color:
+ggplot(mtcars, aes(x = mpg, y = hp, color = factor(cyl))) + geom_point()
+# fill:
+ggplot(mtcars, aes(x = mpg, y = hp, fill = factor(cyl))) + geom_point(shape = 21)
+# shape:
+ggplot(mtcars, aes(x = mpg, y = hp, shape = factor(cyl))) + geom_point()
+```
+
+Mapping something like color in the initial `ggplot()` call of `aes()` will map that variable onto every geom that you add: 
+```{r,include=TRUE}
+ggplot(mtcars, aes(x = mpg, y = hp, color = factor(cyl))) + 
+  geom_point() + geom_line()
+```
+
+If you would like an aesthetic value to change with one of your data columns, this MUST be done inside `aes()`. The following maps incorrectly and will not produce a legend:
+```{r,include=TRUE}
+ggplot(mtcars, aes(x = mpg, y = hp)) + geom_point(color = factor(mtcars$cyl))
+```
+
+## Adding Data to Existing Plots
+
+One of the more clunky things about ggplot is that adding data from an outside data set is a bit awkward. You can do this, but you have to define the new data set you're using and the mapping within the geom. 
+
+For this example, we will use the `Loblolly.wide` data frame and add another column to the graph. 
+```{r,include=TRUE}
+# Create and store graph with year 3 data:
+p2 <- ggplot(Loblolly.wide, aes(x = Seed, y = `3`)) + geom_point()
+# Add year 5 data to the existing graph p2:
+p2 + geom_point(data=Loblolly.wide, 
+                mapping = aes(x = Seed, y = `5`),
+                color = "red")
+```
+This is super clunky and will not give you an automatic legend. Try to avoid adding data in this manner unless it is unavoidable!
+
+#### Put your answer to the Check Your Understanding here
+
+Add to the plot in your last check your understanding by:
+
+ 1. Coloring the plot points by Tree
+ 2. Adding lines in the link data from the individual trees together
+ 
+```{r, include=TRUE}
+
+```
+
+## Importing Data 
+
+#### Example: Clean text file
+
+Let's start by importing a data file into R, `bluecrab.csv`. You'll need to have this file in the same folder as this RMD file for it to work. It's also helpful to set the working directory to that same folder. I've also included a `View()` command so we can look at the data after it's loaded.
+
+```{r,include=TRUE}
+bluecrab.data <- read.csv("data/bluecrab.csv")
+View(bluecrab.data)
+bluecrab.data
+```
+
+This imports the object `bluecrab.data` as a data frame with 72 observations (rows) and 7 variables (columns). 
+
+```{r, include=TRUE}
+?read.csv
+```
+
+Note that tidyr has an equivalent function `read_csv()` which behaves similarly. You're welcome to use either. 
+
+#### Example: Not-so-perfect text file
+
+Here is an example file where things aren't so clean when used with the default `read.csv()` settinigs. 
+
+```{r, include=TRUE}
+babycrab.data <- read.csv("data/babycrab1.csv")
+babycrab.data
+```
+This doesn't seem right. And the data aren't being read in as numbers either: 
+```{r,include=TRUE}
+class(babycrab.data[3,2])
+```
+
+Skipping the first line improves the situation:
+```{r,include=TRUE}
+babycrab.data <- read.csv("data/babycrab1.csv", skip = 1)
+babycrab.data
+```
+Now most of the columns with numerical data are being coded as numeric: 
+```{r,include=TRUE}
+class(babycrab.data[3,2])
+```
+
+Other improvements: here is where `stringsAsFactors` might be good to set at `TRUE` because the fourth column (`sex`) has only two options (m and f) and it is the only column with character values.
+```{r,include=TRUE}
+babycrab.data <- read.csv("data/babycrab1.csv", 
+                          skip = 1, stringsAsFactors = TRUE,
+                          blank.lines.skip = TRUE)
+babycrab.data
+```
+
+#### Read Excel File
+
+Using the `readxl` package. Example: 
+
+```{r,include=TRUE}
+blue2 <- read_excel("data/bluecrab.xlsx")
+blue2
+```
+There is no package for reading in numbers, open office, or google sheets files reliably. Consider converting all non-text files (including Excel files) into text files. 
+
+
+#### Put your answer to the Check Your Understanding here
+
+```{r,include=TRUE}
+
+```
+
+## Cleaning Up Data
+
+#### Cleaning up column names
+
+In the `janitor` package, `clean_names()` will clean up and standardize column names automatically. 
+```{r,include=TRUE}
+# Note: data frame with new column names is not stored
+clean_names(babycrab.data)
+```
+
+#### Remove empty rows and/or columns
+
+```{r,include=TRUE}
+# Note: new data frame is not stored
+remove_empty(babycrab.data, 
+             which=c("rows","cols"))
+```
+
+#### Combining Cleaning Functions with Pipe Command
+
+Tidyverse has a helpful pipe command (`%>%`) which will allow you to run several functions at once! The syntax is the 
+
+```
+object.name %>%
+   fun1() %>%
+   fun2()
+```
+
+You can do this with as many functions as you need. You also don't enter the object as an argument (the pipe does that for you). You can assign this to a new variable if you'd like. You can assign the output unsing the assign arrow like this:
+
+```{r,include=TRUE}
+babycrab.clean <- babycrab.data %>% 
+  clean_names() %>% 
+  remove_empty(which=c("cols"))
+```
+
+#### Omit rows with NA values
+
+We've discuss this before, `na.omit()` to remove all rows with a single NA value, leaving only complete observations. 
+```{r,include=TRUE}
+# Note: new data frame is not stored
+babycrab.clean <- na.omit(babycrab.clean)
+```
+
+Be careful, you may not want to get rid of that much data! 
+
+#### Put your answer to the Check Your Understanding here
+
+Use the pipe operator to create babycrab.clean object that takes babycrab.data and cleans it with each of the cleaning steps at once but in this order: 
+
+ 1. cleans column names
+ 2. removes empty rows and columns
+ 3. removes all rows with NA values
+ 
+```{r,include=TRUE}
+
+```
+
+

@@ -148,7 +148,7 @@ Options for type are `l` for line, `p` for points, or `b` for both.
 
 Amend plot with colors based on factors: 
 ```{r, include=TRUE}
-iriscolors <- c("red", "blue", "black")
+iriscolors <- viridis(3)
 plot(Petal.Length ~ Petal.Width, data = iris,
      type="p", pch = 19, col = iriscolors[iris$Species])
 ```
@@ -186,4 +186,13 @@ legend("topleft", legend = levels(iris$Species),
        col = iriscolors, pch = rep(19, 3))
 ```
 
-
+```{r}
+tree.colors<-viridis(nlevels(Orange$Tree))
+plot(x = Orange$age, y = Orange$circumference, 
+     col = tree.colors[Orange$Tree], pch = 19)
+legend("topleft", 
+       legend = levels(Orange$Tree), 
+       pch = rep(19,nlevels(Orange$Tree)), 
+       col = tree.colors,
+       lty = rep(1,nlevels(Orange$Tree)))
+```
