@@ -81,7 +81,7 @@ mem_change(y<-f2()) # Defines the formula, which changes the memory a little.
 object_size(y)      # But since the function captures the environment, it also captures x. 
 
 f3 <- function(){   # Defines x internally and another nested function which returns 10.
-  x <- 1:1e6
+  x <- runif(1e8)
   function () 10
 }
 mem_change(z<-f3()) # Same story as above, defining the internal function changes little,
@@ -93,7 +93,7 @@ gp <- 1
 .Internal(inspect(gp))
 for (j in 2:10){
   gp <- c(gp, j)
-  print(object_size(gp))
+  #print(object_size(gp))
 }
 .Internal(inspect(gp))
 
@@ -102,7 +102,7 @@ gn <- sample(10)
 .Internal(inspect(gn))
 for (k in 1:10){
   gn[[k]] <- k
-  #print(object_size(gn)) # Using this command causes copying...
+  print(object_size(gn)) # Using this command causes copying...
 }
 .Internal(inspect(gn))
 
